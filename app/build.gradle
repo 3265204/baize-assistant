@@ -1,0 +1,93 @@
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+}
+
+android {
+    namespace = "com.baize.assistant"
+    compileSdk = 35
+
+    defaultConfig {
+        applicationId = "com.baize.assistant"
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 1
+        versionName = "0.1"
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    androidResources {
+        noCompress += ["onnx"]
+    }
+}
+
+def sherpaOnnxVersion = "1.12.21"
+def sherpaAarUrl = "https://huggingface.co/csukuangfj/sherpa-onnx-libs/resolve/main/android/aar/sherpa-onnx-${sherpaOnnxVersion}.aar"
+def localAsrModelUrl = "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-paraformer-zh-small-2024-03-09.tar.bz2"
+def localAsrDirName = "sherpa-onnx-paraformer-zh-small"
+def localAsrArchiveDirName = "sherpa-onnx-paraformer-zh-small-2024-03-09"
+
+tasks.register("downloadSherpaOnnxAar") {
+    def output = file("libs/sherpa-onnx-${sherpaOnnxVersion}.aar")
+    outputs.file(output)
+
+    doLast {
+        output.parentFile.mkdirs()
+        if (!output.exists()) {
+            println("Downloading sherpa-onnx Android AAR...")
+            new URL(sherpaAarUrl).withInputStream { input ->
+                output.withOutputStream { outputStream -> outputStream << input }
+            }
+        }
+    }
+}
+
+tasks.register("downloadLocalAsrModel") {
+    def archive = file("$buildDir/downloads/${localAsrArchiveDirName}.tar.bz2")
+    def unpackDir = file("$buildDir/downloads/local-asr")
+    def assetDir = file("src/main/assets/${localAsrDirName}")
+    outputs.files(
+        file("${assetDir}/model.int8.onnx"),
+        file("${assetDir}/tokens.txt")
+    )
+
+    doLast {
+        archive.parentFile.mkdirs()
+        if (!archive.exists()) {
+            println("Downloading Paraformer zh small model. This may take a while...")
+            new URL(localAsrModelUrl).withInputStream { input ->
+                archive.withOutputStream { outputStream -> outputStream << input }
+            }
+        }
+
+        delete(unpackDir)
+        unpackDir.mkdirs()
+        ant.untar(src: archive, dest: unpackDir, compression: "bzip2")
+
+        assetDir.mkdirs()
+        copy {
+            from("${unpackDir}/${localAsrArchiveDirName}") {
+                include "model.int8.onnx"
+                include "tokens.txt"
+            }
+            into(assetDir)
+        }
+    }
+}
+
+tasks.named("preBuild") {
+    dependsOn("downloadSherpaOnnxAar", "downloadLocalAsrModel")
+}
+
+dependencies {
+    implementation("androidx.core:core-ktx:1.15.0")
+    implementation(fileTree(dir: "libs", include: ["*.aar", "*.jar"]))
+}

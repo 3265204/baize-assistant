@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">白泽</string>
+    <string name="accessibility_desc">用于在创建系统日历提醒后，短时间内自动点击保存、完成或确定按钮。</string>
+</resources>

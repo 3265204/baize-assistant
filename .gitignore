@@ -1,0 +1,29 @@
+# Gradle / Android build outputs
+.gradle/
+.kotlin/
+build/
+app/build/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+
+# Local machine configuration
+local.properties
+
+# Generated or downloaded binaries
+app/libs/*.aar
+app/libs/*.jar
+app/src/main/assets/sherpa-onnx-paraformer-zh-small/
+app/build/downloads/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local assistant/tooling memory
+.claude/
+memory/
