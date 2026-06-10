@@ -452,6 +452,9 @@ internal fun MainActivity.setAssistBusy(message: String, canStopListening: Boole
     voiceButton.isEnabled = canStopListening
     voiceButton.alpha = if (canStopListening) 1f else 0.42f
     voiceButton.text = if (canStopListening) "键入" else ""
+    if (isAssistListeningOverlayReady()) {
+        assistListeningOverlay.visibility = if (canStopListening) View.VISIBLE else View.GONE
+    }
 }
 
 /** 中断当前语音监听（仅小窗模式）。 */
@@ -465,6 +468,17 @@ internal fun MainActivity.stopAssistListeningIfNeeded() {
             speechRecognizer?.cancel()
             clearAssistBusy()
         }
+    }
+}
+
+/** 正在倾听时切换到键盘输入：点遮罩或"键入"按钮都会走这里。 */
+internal fun MainActivity.switchAssistListeningToTyping() {
+    if (!isAssistantWindow()) return
+    stopTtsPlayback()
+    stopAssistListeningIfNeeded()
+    if (isInputReady()) {
+        input.requestFocus()
+        input.post { showKeyboard(input) }
     }
 }
 
@@ -489,6 +503,9 @@ internal fun MainActivity.clearAssistBusy(nextHint: String = "") {
     input.alpha = 1f
     voiceButton.isEnabled = true
     voiceButton.alpha = 1f
+    if (isAssistListeningOverlayReady()) {
+        assistListeningOverlay.visibility = View.GONE
+    }
     updateAssistActionButton()
 }
 

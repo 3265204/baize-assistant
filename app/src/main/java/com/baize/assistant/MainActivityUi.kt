@@ -13,6 +13,7 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -397,7 +398,7 @@ internal fun MainActivity.buildAssistBarUiV2() {
         styleAssistPrimaryButton()
         setOnClickListener {
             if (assistWindowBusy) {
-                stopAssistListeningIfNeeded()
+                switchAssistListeningToTyping()
                 return@setOnClickListener
             }
             if (input.text.toString().trim().isEmpty()) {
@@ -442,12 +443,30 @@ internal fun MainActivity.buildAssistBarUiV2() {
         addView(bar)
     }
 
+    assistListeningOverlay = View(this).apply {
+        visibility = View.GONE
+        isClickable = true
+        setBackgroundColor(Color.TRANSPARENT)
+        setOnClickListener { switchAssistListeningToTyping() }
+    }
+
+    val panelFrame = FrameLayout(this).apply {
+        addView(panel, FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        ))
+        addView(assistListeningOverlay, FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        ))
+    }
+
     // 外层包装：透明背景 + 底部内边距
     val wrapper = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
         setPadding(dp(8), 0, dp(8), dp(10))
         setBackgroundColor(Color.TRANSPARENT)
-        addView(panel, LinearLayout.LayoutParams(
+        addView(panelFrame, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
         ))
     }
