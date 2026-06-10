@@ -135,14 +135,20 @@ fun Button.styleAssistIconButton(textColor: Int) {
     setPadding(0, 0, 0, 0)
 }
 
-/** 助理窗口主操作按钮：黑字白底大圆角，用于"语音/发送"切换。 */
+/** 助理窗口主操作按钮：深色模式白底，浅色模式蓝底，用于"语音/发送"切换。 */
 fun Button.styleAssistPrimaryButton() {
-    setTextColor(Color.BLACK)
+    val darkMode = context.isDarkMode()
+    setTextColor(if (darkMode) Color.BLACK else Color.WHITE)
     textSize = 18f
     isAllCaps = false
     includeFontPadding = false
     gravity = Gravity.CENTER
-    background = roundedBg(Color.WHITE, context.dp(24), Color.TRANSPARENT, 0)
+    background = roundedBg(
+        if (darkMode) Color.WHITE else context.accentColor(),
+        context.dp(24),
+        Color.TRANSPARENT,
+        0
+    )
     minWidth = context.dp(52)
     minimumWidth = context.dp(52)
     minHeight = context.dp(44)

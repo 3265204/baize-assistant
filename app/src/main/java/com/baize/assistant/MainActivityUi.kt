@@ -341,12 +341,15 @@ internal fun MainActivity.buildUi() {
 
 // -----------------------------------------------------------------------------
 // 助理小窗 UI（AssistActivity 使用时渲染的紧凑浮动面板）。
-// 黑底白字，底部固定一个输入栏 + 语音/发送切换按钮。
+// 跟随系统深浅色主题，底部固定一个输入栏 + 语音/发送切换按钮。
 // -----------------------------------------------------------------------------
 internal fun MainActivity.buildAssistBarUiV2() {
-    val barColor = Color.BLACK
-    val textColor = Color.WHITE
-    val hintColor = Color.rgb(170, 170, 176)
+    val darkMode = isDarkMode()
+    val barColor = if (darkMode) Color.BLACK else surfaceColor()
+    val textColor = primaryText()
+    val hintColor = secondaryText()
+    val panelStroke = if (darkMode) Color.TRANSPARENT else dividerColor()
+    val panelStrokeWidth = if (darkMode) 0 else dp(1)
 
     // 回答展示区（初始隐藏，有结果后显示）
     answerText = TextView(this).apply {
@@ -433,7 +436,7 @@ internal fun MainActivity.buildAssistBarUiV2() {
     // 面板：回答 + 状态 + 输入栏
     val panel = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
-        background = roundedBg(barColor, dp(28), Color.TRANSPARENT, 0)
+        background = roundedBg(barColor, dp(28), panelStroke, panelStrokeWidth)
         addView(answerText)
         addView(assistStatusText)
         addView(bar)
