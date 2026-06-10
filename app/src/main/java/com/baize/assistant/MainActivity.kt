@@ -55,7 +55,6 @@ open class MainActivity : Activity() {
     internal lateinit var assistStatusText: TextView
     internal lateinit var input: EditText
     internal lateinit var voiceButton: Button
-    internal lateinit var assistListeningOverlay: View
 
     // ---- 侧边栏相关 ----
     internal var sidebarView: View? = null
@@ -307,7 +306,6 @@ open class MainActivity : Activity() {
     internal fun isAssistStatusTextReady() = ::assistStatusText.isInitialized
     internal fun isInputReady() = ::input.isInitialized
     internal fun isVoiceButtonReady() = ::voiceButton.isInitialized
-    internal fun isAssistListeningOverlayReady() = ::assistListeningOverlay.isInitialized
     internal fun isTtsReady() = ::tts.isInitialized
 
     // =========================================================================

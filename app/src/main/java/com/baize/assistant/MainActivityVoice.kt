@@ -440,21 +440,24 @@ internal fun MainActivity.setAssistStatus(message: String) {
 /**
  * 进入"忙"状态：锁定输入框、禁用发送按钮。
  * @param message 输入框 placeholder 文案
- * @param canStopListening 是否允许通过按钮中断当前操作（如停止录音）
+ * @param canStopListening 是否允许通过点击输入栏中断当前倾听
  */
 internal fun MainActivity.setAssistBusy(message: String, canStopListening: Boolean = false) {
     if (!isAssistantWindow() || !isInputReady() || !isVoiceButtonReady()) return
     assistWindowBusy = true
     input.text.clear()
     input.hint = message
-    input.isEnabled = false
-    input.alpha = 0.72f
-    voiceButton.isEnabled = canStopListening
-    voiceButton.alpha = if (canStopListening) 1f else 0.42f
-    voiceButton.text = if (canStopListening) "键入" else ""
-    if (isAssistListeningOverlayReady()) {
-        assistListeningOverlay.visibility = if (canStopListening) View.VISIBLE else View.GONE
+    input.isEnabled = canStopListening
+    input.isFocusable = false
+    input.isFocusableInTouchMode = false
+    input.isCursorVisible = false
+    input.setOnClickListener {
+        if (canStopListening) switchAssistListeningToTyping()
     }
+    input.alpha = 0.72f
+    voiceButton.visibility = View.GONE
+    voiceButton.isEnabled = false
+    voiceButton.alpha = 1f
 }
 
 /** 中断当前语音监听（仅小窗模式）。 */
@@ -471,7 +474,7 @@ internal fun MainActivity.stopAssistListeningIfNeeded() {
     }
 }
 
-/** 正在倾听时切换到键盘输入：点遮罩或"键入"按钮都会走这里。 */
+/** 正在倾听时切换到键盘输入：点击"正在倾听"输入栏会走这里。 */
 internal fun MainActivity.switchAssistListeningToTyping() {
     if (!isAssistantWindow()) return
     stopTtsPlayback()
@@ -500,12 +503,14 @@ internal fun MainActivity.clearAssistBusy(nextHint: String = "") {
     assistWindowBusy = false
     input.hint = nextHint
     input.isEnabled = true
+    input.isFocusable = true
+    input.isFocusableInTouchMode = true
+    input.isCursorVisible = true
+    input.setOnClickListener(null)
     input.alpha = 1f
+    voiceButton.visibility = View.VISIBLE
     voiceButton.isEnabled = true
     voiceButton.alpha = 1f
-    if (isAssistListeningOverlayReady()) {
-        assistListeningOverlay.visibility = View.GONE
-    }
     updateAssistActionButton()
 }
 

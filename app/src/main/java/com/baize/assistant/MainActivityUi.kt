@@ -13,7 +13,6 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
-import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -427,8 +426,12 @@ internal fun MainActivity.buildAssistBarUiV2() {
         setPadding(dp(10), dp(6), dp(8), dp(6))
         isClickable = true
         setOnClickListener {
-            input.requestFocus()
-            showKeyboard(input)
+            if (assistWindowBusy && (isListening || isLocalRecording)) {
+                switchAssistListeningToTyping()
+            } else if (!assistWindowBusy) {
+                input.requestFocus()
+                showKeyboard(input)
+            }
         }
         addView(input)
         addView(voiceButton)
@@ -438,27 +441,15 @@ internal fun MainActivity.buildAssistBarUiV2() {
     val panel = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
         background = roundedBg(barColor, dp(28), panelStroke, panelStrokeWidth)
+        isClickable = true
+        setOnClickListener {
+            if (assistWindowBusy && (isListening || isLocalRecording)) {
+                switchAssistListeningToTyping()
+            }
+        }
         addView(answerText)
         addView(assistStatusText)
         addView(bar)
-    }
-
-    assistListeningOverlay = View(this).apply {
-        visibility = View.GONE
-        isClickable = true
-        setBackgroundColor(Color.TRANSPARENT)
-        setOnClickListener { switchAssistListeningToTyping() }
-    }
-
-    val panelFrame = FrameLayout(this).apply {
-        addView(panel, FrameLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ))
-        addView(assistListeningOverlay, FrameLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        ))
     }
 
     // 外层包装：透明背景 + 底部内边距
@@ -466,7 +457,7 @@ internal fun MainActivity.buildAssistBarUiV2() {
         orientation = LinearLayout.VERTICAL
         setPadding(dp(8), 0, dp(8), dp(10))
         setBackgroundColor(Color.TRANSPARENT)
-        addView(panelFrame, LinearLayout.LayoutParams(
+        addView(panel, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
         ))
     }
